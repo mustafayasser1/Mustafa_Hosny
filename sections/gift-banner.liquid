@@ -221,6 +221,12 @@
   /* ---------- Main area (image + overlaid text) ---------- */
   .gift-banner__main {
     display: grid;
+    /* Shared left inset used by BOTH the text card and the Shop Now
+       button, so their left edges line up into one continuous shape
+       instead of two independently-positioned pieces */
+    --void-inset-x: 3rem;
+    --void-inset-bottom: 3rem;
+    --void-btn-gap: 1rem; /* gap between paragraph and button */
   }
 
   .gift-banner__text,
@@ -251,16 +257,18 @@
     align-self: end;
     justify-self: start;
     z-index: 2;
-    /* Opaque backdrop so the illustration lines behind it don't bleed
-       through the heading/paragraph — matches the white card in Figma.
-       Text is flush against the bottom of the image (align-self: end),
-       and the Shop Now button below is offset the same 3rem from that
-       same edge, so the two line up without a visible gap. */
+    /* Opaque backdrop so illustration lines never bleed through the
+       heading/paragraph — this is the "cutout" area from the design.
+       margin-bottom reserves exactly enough room below this block for
+       the button (its height + the gap) so the card and the button
+       form ONE continuous rectangle with zero seam between them. */
     background: var(--gift-banner-page-bg, #ffffff);
-    padding: 3rem;
-    /* 483px = paragraph box width from Figma Dev Mode (the widest of the
-       two text elements), so the whole card is wide enough for both */
-    max-width: 483px;
+    margin-left: var(--void-inset-x);
+    margin-bottom: calc(var(--void-inset-bottom) + 50px + var(--void-btn-gap));
+    padding: 2rem 2rem 0;
+    /* 483px = paragraph box width from Figma Dev Mode, plus the card's
+       own padding, so the visible box comfortably fits both text lines */
+    width: calc(483px + 4rem);
   }
 
   .gift-banner__heading {
@@ -273,7 +281,7 @@
   }
 
   .gift-banner__paragraph {
-    margin: 0 0 1.5rem;
+    margin: 0 0 2rem;
     /* 483px wrap width from Figma Dev Mode */
     max-width: 483px;
     font-size: 0.95rem;
@@ -284,12 +292,13 @@
     margin: 0;
   }
 
-  /* Shop Now button pinned bottom-left of the image, right under the text
-     block above it on desktop */
+  /* Shop Now button: pinned to the same left inset as the text card
+     above it, and offset from the bottom edge — together they form one
+     continuous cutout shape rather than two separately floating pieces */
   .gift-banner__btn--shop {
     position: absolute;
-    left: 3rem;
-    bottom: 3rem;
+    left: var(--void-inset-x);
+    bottom: var(--void-inset-bottom);
   }
 
   /* ---------- Bottom bar ---------- */
@@ -329,7 +338,10 @@
 
     .gift-banner__text {
       position: static;
+      width: auto;
       max-width: none;
+      margin-left: 0;
+      margin-bottom: 0;
       text-align: center;
       padding: 2rem 1.25rem 1.5rem;
     }
