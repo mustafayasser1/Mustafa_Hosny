@@ -1,0 +1,431 @@
+{% comment %}
+  ==========================================================================
+  SECTION: Gift Banner (built from scratch — no Dawn snippets/sections used)
+  --------------------------------------------------------------------------
+  Renders the "Gift Guide" banner exactly as designed in Figma:
+    - Top bar: logo, announcement text, "Choose Gift" CTA (yellow button)
+    - Main area: illustration image with heading, paragraph and
+      "Shop Now" CTA (black button) overlaid on top of it
+    - Bottom bar: black strip with a single line of centered text
+
+  Every red-rectangle field from the design brief is exposed as an
+  editable setting below so merchants can change copy from the
+  Theme Customizer without touching code.
+
+  Both buttons share a reusable "sweep" hover animation built with
+  pure CSS (::before pseudo-element that scales in from the left).
+  No jQuery / JS is required for the animation itself.
+  ==========================================================================
+{% endcomment %}
+
+<section
+  class="gift-banner"
+  style="
+    --gift-banner-page-bg: {{ section.settings.page_bg_color }};
+    --gift-banner-topbar-bg: {{ section.settings.topbar_bg_color }};
+    --gift-banner-yellow: {{ section.settings.accent_color }};
+    --gift-banner-black: {{ section.settings.dark_color }};
+  "
+>
+
+  {% comment %} ---------- TOP BAR ---------- {% endcomment %}
+  <div class="gift-banner__topbar">
+    <p class="gift-banner__logo">{{ section.settings.logo_text }}</p>
+
+    {% if section.settings.announcement_text != blank %}
+      <p class="gift-banner__announcement">{{ section.settings.announcement_text }}</p>
+    {% endif %}
+
+    {% if section.settings.top_button_text != blank %}
+      <a
+        href="{{ section.settings.top_button_link | default: '#' }}"
+        class="gift-banner__btn gift-banner__btn--yellow"
+      >
+        <span class="gift-banner__btn-label">{{ section.settings.top_button_text }}</span>
+        <span class="gift-banner__btn-arrow" aria-hidden="true">&#8594;</span>
+      </a>
+    {% endif %}
+  </div>
+
+  {% comment %} ---------- MAIN AREA (image + overlaid text) ---------- {% endcomment %}
+  <div class="gift-banner__main">
+
+    {% comment %} Heading + paragraph: normal-flow on mobile, overlaid on desktop {% endcomment %}
+    <div class="gift-banner__text">
+      {% if section.settings.heading != blank %}
+        <h2 class="gift-banner__heading">{{ section.settings.heading }}</h2>
+      {% endif %}
+
+      {% if section.settings.paragraph != blank %}
+        <div class="gift-banner__paragraph">{{ section.settings.paragraph }}</div>
+      {% endif %}
+    </div>
+
+    {% comment %} Image + Shop Now button (button stays pinned over the image at all breakpoints) {% endcomment %}
+    <div class="gift-banner__image-wrap">
+      {% if section.settings.illustration_image != blank %}
+        <img
+          class="gift-banner__image"
+          src="{{ section.settings.illustration_image | image_url: width: 1600 }}"
+          alt="{{ section.settings.illustration_image.alt | default: section.settings.heading | escape }}"
+          width="{{ section.settings.illustration_image.width }}"
+          height="{{ section.settings.illustration_image.height }}"
+          loading="lazy"
+        >
+      {% else %}
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'gift-banner__image gift-banner__image--placeholder' }}
+      {% endif %}
+
+      {% if section.settings.shop_button_text != blank %}
+        <a
+          href="{{ section.settings.shop_button_link | default: '#' }}"
+          class="gift-banner__btn gift-banner__btn--dark gift-banner__btn--shop"
+        >
+          <span class="gift-banner__btn-label">{{ section.settings.shop_button_text }}</span>
+          <span class="gift-banner__btn-arrow" aria-hidden="true">&#8594;</span>
+        </a>
+      {% endif %}
+    </div>
+
+  </div>
+
+  {% comment %} ---------- BOTTOM BAR ---------- {% endcomment %}
+  {% if section.settings.bottom_bar_text != blank %}
+    <div class="gift-banner__bottombar">
+      <p>{{ section.settings.bottom_bar_text }}</p>
+    </div>
+  {% endif %}
+
+</section>
+
+{% stylesheet %}
+  /* ==========================================================================
+     Gift Banner — scoped styles (all selectors prefixed with .gift-banner
+     so nothing leaks into / clashes with the rest of the theme)
+     ========================================================================== */
+
+  .gift-banner {
+    background: var(--gift-banner-page-bg, #ffffff);
+    border: 8px solid var(--gift-banner-black, #000000);
+    font-family: inherit;
+    overflow: hidden;
+  }
+
+  /* ---------- Top bar ---------- */
+  .gift-banner__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: var(--gift-banner-topbar-bg, #f6f6f6);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .gift-banner__logo {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .gift-banner__announcement {
+    margin: 0;
+    font-size: 0.85rem;
+    text-align: center;
+    flex: 1;
+  }
+
+  /* ---------- Buttons (shared) ---------- */
+  .gift-banner__btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+    overflow: hidden;   /* clips the sweep pseudo-element */
+    white-space: nowrap;
+    isolation: isolate; /* keeps stacking context local */
+  }
+
+  .gift-banner__btn-label,
+  .gift-banner__btn-arrow {
+    position: relative;
+    z-index: 2;
+    transition: color 0.35s ease, transform 0.35s ease;
+  }
+
+  .gift-banner__btn-arrow {
+    transition: color 0.35s ease, transform 0.35s ease;
+  }
+
+  .gift-banner__btn:hover .gift-banner__btn-arrow {
+    transform: translateX(4px);
+  }
+
+  /* Sweep layer: starts collapsed on the left, scales open on hover */
+  .gift-banner__btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.35s ease;
+  }
+
+  .gift-banner__btn:hover::before {
+    transform: scaleX(1);
+  }
+
+  /* Choose Gift — yellow resting state, black sweep on hover */
+  .gift-banner__btn--yellow {
+    background: var(--gift-banner-yellow, #fff545);
+    color: var(--gift-banner-black, #000000);
+  }
+  .gift-banner__btn--yellow::before {
+    background: var(--gift-banner-black, #000000);
+  }
+  .gift-banner__btn--yellow:hover .gift-banner__btn-label,
+  .gift-banner__btn--yellow:hover .gift-banner__btn-arrow {
+    color: #ffffff;
+  }
+
+  /* Shop Now — black resting state, white sweep on hover
+     (inverted so the sweep is actually visible against a black button —
+     see note in chat; flip these two colors if the brief means something else) */
+  .gift-banner__btn--dark {
+    background: var(--gift-banner-black, #000000);
+    color: #ffffff;
+  }
+  .gift-banner__btn--dark::before {
+    background: #ffffff;
+  }
+  .gift-banner__btn--dark:hover .gift-banner__btn-label,
+  .gift-banner__btn--dark:hover .gift-banner__btn-arrow {
+    color: var(--gift-banner-black, #000000);
+  }
+
+  /* ---------- Main area (image + overlaid text) ---------- */
+  .gift-banner__main {
+    display: grid;
+  }
+
+  .gift-banner__text,
+  .gift-banner__image-wrap {
+    grid-area: 1 / 1; /* stack on top of each other on desktop */
+  }
+
+  .gift-banner__image-wrap {
+    position: relative;
+    line-height: 0;
+  }
+
+  .gift-banner__image,
+  .gift-banner__image--placeholder {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .gift-banner__text {
+    align-self: end;
+    justify-self: start;
+    z-index: 2;
+    padding: 3rem;
+    max-width: 460px;
+  }
+
+  .gift-banner__heading {
+    margin: 0 0 1rem;
+    font-size: clamp(2.25rem, 4vw, 3.25rem);
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .gift-banner__paragraph {
+    margin: 0 0 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .gift-banner__paragraph p {
+    margin: 0;
+  }
+
+  /* Shop Now button pinned bottom-left of the image, right under the text
+     block above it on desktop */
+  .gift-banner__btn--shop {
+    position: absolute;
+    left: 3rem;
+    bottom: 3rem;
+  }
+
+  /* ---------- Bottom bar ---------- */
+  .gift-banner__bottombar {
+    background: var(--gift-banner-black, #000000);
+    color: #ffffff;
+    text-align: center;
+    padding: 0.75rem 1rem;
+  }
+
+  .gift-banner__bottombar p {
+    margin: 0;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ==========================================================================
+     Mobile layout (matches the Figma "Home page:M" frame)
+     - Announcement + Choose Gift button hide
+     - Heading/paragraph move above the image, centered
+     - Shop Now button stays pinned over the image, but centered
+     ========================================================================== */
+  @media screen and (max-width: 749px) {
+    .gift-banner__announcement,
+    .gift-banner__btn--yellow {
+      display: none;
+    }
+
+    .gift-banner__topbar {
+      justify-content: center;
+    }
+
+    .gift-banner__main {
+      display: block; /* break the desktop grid-overlap */
+    }
+
+    .gift-banner__text {
+      position: static;
+      max-width: none;
+      text-align: center;
+      padding: 2rem 1.25rem 1.5rem;
+    }
+
+    .gift-banner__btn--shop {
+      left: 50%;
+      bottom: 1.5rem;
+      transform: translateX(-50%);
+    }
+    .gift-banner__btn--shop:hover .gift-banner__btn-arrow {
+      transform: translateX(calc(-50% + 4px));
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Gift Banner",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Top bar"
+    },
+    {
+      "type": "text",
+      "id": "logo_text",
+      "label": "Logo text",
+      "default": "Tisso Vison"
+    },
+    {
+      "type": "text",
+      "id": "announcement_text",
+      "label": "Announcement text (hidden on mobile)",
+      "default": "Find the ideal gift for your loved ones."
+    },
+    {
+      "type": "text",
+      "id": "top_button_text",
+      "label": "Top button label (hidden on mobile)",
+      "default": "Choose Gift"
+    },
+    {
+      "type": "url",
+      "id": "top_button_link",
+      "label": "Top button link"
+    },
+    {
+      "type": "header",
+      "content": "Main content"
+    },
+    {
+      "type": "image_picker",
+      "id": "illustration_image",
+      "label": "Illustration image"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The Gift Guide"
+    },
+    {
+      "type": "richtext",
+      "id": "paragraph",
+      "label": "Paragraph",
+      "default": "<p>Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.</p>"
+    },
+    {
+      "type": "text",
+      "id": "shop_button_text",
+      "label": "Shop button label",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "shop_button_link",
+      "label": "Shop button link"
+    },
+    {
+      "type": "header",
+      "content": "Bottom bar"
+    },
+    {
+      "type": "text",
+      "id": "bottom_bar_text",
+      "label": "Bottom bar text",
+      "default": "Sustainable, ethically made clothes in sizes XXS to 6XL"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "page_bg_color",
+      "label": "Main background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "topbar_bg_color",
+      "label": "Top bar background",
+      "default": "#f6f6f6"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent (yellow button)",
+      "default": "#fff545"
+    },
+    {
+      "type": "color",
+      "id": "dark_color",
+      "label": "Dark (borders / buttons / bottom bar)",
+      "default": "#000000"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gift Banner"
+    }
+  ]
+}
+{% endschema %}
