@@ -138,12 +138,18 @@
   }
 
   /* ---------- Buttons (shared) ---------- */
+  /* Both buttons share the exact same box size (Choose Gift and Shop Now
+     must look identical in width/height, only color + label differ) */
   .gift-banner__btn {
     position: relative;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.6rem;
-    padding: 0.75rem 1.25rem;
+    width: 180px;
+    height: 52px;
+    padding: 0 1.25rem;
+    box-sizing: border-box;
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -197,15 +203,14 @@
     color: #ffffff;
   }
 
-  /* Shop Now — black resting state, white sweep on hover
-     (inverted so the sweep is actually visible against a black button —
-     see note in chat; flip these two colors if the brief means something else) */
+  /* Shop Now — black resting state, yellow sweep on hover
+     (mirrors Choose Gift: black <-> yellow, just swapped) */
   .gift-banner__btn--dark {
     background: var(--gift-banner-black, #000000);
     color: #ffffff;
   }
   .gift-banner__btn--dark::before {
-    background: #ffffff;
+    background: var(--gift-banner-yellow, #fff545);
   }
   .gift-banner__btn--dark:hover .gift-banner__btn-label,
   .gift-banner__btn--dark:hover .gift-banner__btn-arrow {
@@ -238,6 +243,12 @@
     align-self: end;
     justify-self: start;
     z-index: 2;
+    /* Opaque backdrop so the illustration lines behind it don't bleed
+       through the heading/paragraph — matches the white card in Figma.
+       Text is flush against the bottom of the image (align-self: end),
+       and the Shop Now button below is offset the same 3rem from that
+       same edge, so the two line up without a visible gap. */
+    background: var(--gift-banner-page-bg, #ffffff);
     padding: 3rem;
     max-width: 460px;
   }
